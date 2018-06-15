@@ -21,7 +21,7 @@ public class BancoDeDados{
 	
 	public static void main(String args[]) throws SQLException {
 		
-		BancoDeDados bd = new BancoDeDados("jdbc:mysql://localhost:3306/atividade01", "root", "");
+		BancoDeDados bd = new BancoDeDados("localhost:3306", "atividade01", "root", "");
 		
 		JFrame frame = new JFrame();
 		frame.setSize(616, 339);
@@ -40,15 +40,15 @@ public class BancoDeDados{
 	}
 	
 	
-	public BancoDeDados(String url, String user, String password) {
+	public BancoDeDados(String host, String banco, String user, String password) {
 		
 		try {
 			
 			Class.forName("com.mysql.cj.jdbc.Driver");
-			this.connect = DriverManager.getConnection(url + "?useTimezone=true&serverTimezone=UTC", user, password);
+			this.connect = DriverManager.getConnection("jdbc:mysql://" + host + "/" + banco + "?useTimezone=true&serverTimezone=UTC", user, password);
 		} catch (Exception e) {
 			
-			System.out.println("Impossível conectar com Banco De Dados em " + url + ".");
+			System.out.println("Impossível conectar com Banco De Dados em " + host + ".");
 			e.printStackTrace();
 		}
 		
@@ -57,7 +57,7 @@ public class BancoDeDados{
 			this.statement = this.connect.createStatement();
 		} catch (Exception e) {
 			
-			System.out.println("Impossível criar conexão com o Banco De Dados em " + url + ".");
+			System.out.println("Impossível criar conexão com o Banco De Dados em " + host + ".");
 		}
 	}
 	
