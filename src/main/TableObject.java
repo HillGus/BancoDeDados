@@ -1,8 +1,11 @@
 package main;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import tableModel.ObjectInfo;
 
-public class ObjetoGenerico implements ObjectInfo {
+public class TableObject implements ObjectInfo {
 
 	private Object[] info;
 	private Object[] infoName;
@@ -10,7 +13,10 @@ public class ObjetoGenerico implements ObjectInfo {
 	private int indInfo = 0;
 	private int indInfoName = 0;
 	
-	public ObjetoGenerico(int length) {
+	private Map<String, Integer> indexes = new HashMap<String, Integer>(); 
+	
+	
+	public TableObject(int length) {
 		
 		this.info = new Object[length];
 		this.infoName = new Object[length];

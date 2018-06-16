@@ -6,6 +6,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
@@ -14,27 +16,33 @@ import tableModel.CustomTableModel;
 
 public class BancoDeDados{
 
-	private CustomTableModel<ObjetoGenerico> tableModel = new CustomTableModel<>();
+	private CustomTableModel<TableObject> tableModel = new CustomTableModel<>();
 	private Connection connect;
 	private Statement statement;
 	
-	
 	public static void main(String args[]) throws SQLException {
 		
-		BancoDeDados bd = new BancoDeDados("localhost:3306", "atividade01", "root", "");
+		BancoDeDados bd = new BancoDeDados("localhost", "atividade03", "root", "");
+		
+		DataTable produtos = bd.getTable("produtos");
+		DataTable marcas = bd.getTable("marcas");
 		
 		JFrame frame = new JFrame();
-		frame.setSize(616, 339);
+		frame.setSize(616, 614);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setLayout(null);
 		frame.setLocationRelativeTo(null);
 		
-		JScrollPane tabela = bd.select("produtos", new String[][] {{"idProduto",   "Código"}, 
-																   {"nomeProduto", "Nome"}});
-	
-		tabela.setBounds(25, 25, 550, 250);
+		JScrollPane pane = produtos.getModel().getScroll();
 		
-		frame.add(tabela);
+		pane.setBounds(25, 25, 550, 250);
+		
+		JScrollPane pane2 = marcas.getModel().getScroll();
+		
+		pane2.setBounds(25, 300, 550, 250);
+		
+		frame.add(pane);
+		frame.add(pane2);
 		
 		frame.setVisible(true);
 	}
@@ -62,7 +70,27 @@ public class BancoDeDados{
 	}
 	
 	
-	public JScrollPane select(String tabela, String[][] atributos) throws SQLException {
+	public DataTable getTable(String tabela) {
+		
+		return new DataTable(tabela, this);
+	}
+	
+	public Object execute(String command) {
+		
+		try {
+			
+			Object objeto = this.statement.executeQuery(command);
+			return objeto;
+		} catch (SQLException e) {
+			
+			System.out.println("Erro ao executar comando.");
+			e.printStackTrace();
+		}
+		
+		return null;
+	}
+	
+	public ResultSet select(String tabela, String[] atributos) {
 		
 		String select = montarSelect(tabela, atributos);
 		
@@ -70,56 +98,54 @@ public class BancoDeDados{
 		
 		try {
 			
-			resultado = this.statement.executeQuery(select);
+			return this.statement.executeQuery(select);
 		} catch (SQLException e) {
 			
 			System.out.println("Erro ao selecionar dados.");
 			e.printStackTrace();
+			return null;
 		}
+	}
+
+	public ResultSet select(String select) {
 		
-		ArrayList<ObjetoGenerico> objetos = getObjetos(resultado, atributos);
+		try {
+			
+			return this.statement.executeQuery(select);
+		} catch (SQLException e) {
+			
+			System.out.println("Erro ao selecionar dados.");
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	public void insert(String insert) {
 		
-		tableModel.setObjects(objetos);
-		
-		return tableModel.getScroll();
+		try {
+			
+			this.statement.executeUpdate(insert);
+		} catch (SQLException e) {
+			
+			System.out.println("Erro ao inserir dados.");
+			e.printStackTrace();
+		}
 	}
 	
 	
-	private String montarSelect(String tabela, String[][] atributos) {
+	private String montarSelect(String tabela, String[] atributos) {
 		
 		String select = "select ";
 		
-		for (String[] linha : atributos) {
+		for (String atributo : atributos) {
 			
-			select += linha[0] + " as " + linha[1] + 
-					  (atributos[atributos.length - 1] == linha ? " " : ", ");
+			String info = atributo;
+			
+			select += info + (atributo == atributos[atributos.length - 1] ? " " : ", ");
 		}
 			
 		select += "from " + tabela;
 		
 		return select;
-	}
-
-	private ArrayList<ObjetoGenerico> getObjetos(ResultSet resultado, String[][] atributos) throws SQLException {
-		
-		ArrayList<ObjetoGenerico> objetos = new ArrayList<>();
-		
-		int tamanho = atributos.length;
-		
-		while (resultado.next()) {
-			
-			ObjetoGenerico obj = new ObjetoGenerico(tamanho);
-			
-			for (int i = 0; i < tamanho; i++) {
-				
-				String tituloColuna = atributos[i][1];
-				
-				obj.addInfo(tituloColuna, resultado.getObject(tituloColuna));
-			}
-			
-			objetos.add(obj);
-		}
-		
-		return objetos;
 	}
 }
