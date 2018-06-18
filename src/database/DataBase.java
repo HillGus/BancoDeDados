@@ -1,34 +1,27 @@
-package main;
+package database;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 
-import tableModel.CustomTableModel;
+public class DataBase {
 
-public class BancoDeDados{
-
-	private CustomTableModel<TableObject> tableModel = new CustomTableModel<>();
 	private Connection connect;
 	private Statement statement;
 	
 	public static void main(String args[]) throws SQLException {
 		
-		BancoDeDados bd = new BancoDeDados("localhost", "atividade03", "root", "");
+		DataBase bd = new DataBase("localhost", "atividade01", "root", "");
 		
 		DataTable produtos = bd.getTable("produtos");
-		DataTable marcas = bd.getTable("marcas");
 		
 		JFrame frame = new JFrame();
-		frame.setSize(616, 614);
+		frame.setSize(616, 339);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setLayout(null);
 		frame.setLocationRelativeTo(null);
@@ -37,22 +30,21 @@ public class BancoDeDados{
 		
 		pane.setBounds(25, 25, 550, 250);
 		
-		JScrollPane pane2 = marcas.getModel().getScroll();
-		
-		pane2.setBounds(25, 300, 550, 250);
-		
 		frame.add(pane);
-		frame.add(pane2);
 		
 		frame.setVisible(true);
 	}
 	
 	
-	public BancoDeDados(String host, String banco, String user, String password) {
+	public DataBase(String host, String banco, String user, String password) {
 		
 		try {
 			
+			//Inicia driver do java que conecta com o sql
 			Class.forName("com.mysql.cj.jdbc.Driver");
+			
+			//Inicia conexão
+			//O useTimezone[...] é para que não dê conflito com o banco dependendo do lugar
 			this.connect = DriverManager.getConnection("jdbc:mysql://" + host + "/" + banco + "?useTimezone=true&serverTimezone=UTC", user, password);
 		} catch (Exception e) {
 			
@@ -62,6 +54,7 @@ public class BancoDeDados{
 		
 		try {
 			
+			//Cria o statement, que conecta com o banco e retorna os dados
 			this.statement = this.connect.createStatement();
 		} catch (Exception e) {
 			
@@ -79,7 +72,7 @@ public class BancoDeDados{
 		
 		try {
 			
-			Object objeto = this.statement.executeQuery(command);
+			Object objeto = this.statement.executeUpdate(command);
 			return objeto;
 		} catch (SQLException e) {
 			
@@ -90,23 +83,6 @@ public class BancoDeDados{
 		return null;
 	}
 	
-	public ResultSet select(String tabela, String[] atributos) {
-		
-		String select = montarSelect(tabela, atributos);
-		
-		ResultSet resultado = null;
-		
-		try {
-			
-			return this.statement.executeQuery(select);
-		} catch (SQLException e) {
-			
-			System.out.println("Erro ao selecionar dados.");
-			e.printStackTrace();
-			return null;
-		}
-	}
-
 	public ResultSet select(String select) {
 		
 		try {
@@ -130,22 +106,5 @@ public class BancoDeDados{
 			System.out.println("Erro ao inserir dados.");
 			e.printStackTrace();
 		}
-	}
-	
-	
-	private String montarSelect(String tabela, String[] atributos) {
-		
-		String select = "select ";
-		
-		for (String atributo : atributos) {
-			
-			String info = atributo;
-			
-			select += info + (atributo == atributos[atributos.length - 1] ? " " : ", ");
-		}
-			
-		select += "from " + tabela;
-		
-		return select;
 	}
 }
