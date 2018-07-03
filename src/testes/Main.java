@@ -12,6 +12,6 @@ public class Main {
 		
 		DataTable<ClasseGenerica> dt = db.getTable("tabelateste", new ClasseGenerica());
 		
-		System.out.println(dt.select());
+		System.out.println(dt.select().get(0).getUserNome());
 	}
 }

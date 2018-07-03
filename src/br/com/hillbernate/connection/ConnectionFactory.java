@@ -15,9 +15,9 @@ public class ConnectionFactory {
 	
 	public ConnectionFactory addConnection(String url, String user, String password, String banco) {
 		
-	try {
-			
-			conexoes.put(banco, DriverManager.getConnection(url, user, password));
+		try {
+			Connection con = DriverManager.getConnection(url, user, password);
+			conexoes.put(banco, con);
 		} catch (SQLException e) {
 			
 			e.printStackTrace();

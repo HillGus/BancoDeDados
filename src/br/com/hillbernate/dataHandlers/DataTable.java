@@ -13,8 +13,8 @@ import br.com.hillbernate.connection.ConnectionFactory;
 
 public class DataTable<Objeto extends Object> {
 
-	private HashMap<String, String> getters = new HashMap<>();
-	private HashMap<String, String> setters = new HashMap<>();
+	private HashMap<String, Method> getters = new HashMap<>();
+	private HashMap<String, Method> setters = new HashMap<>();
 	private ArrayList<String> fields = new ArrayList<>();
 
 	private Connection conexao;
@@ -76,8 +76,10 @@ public class DataTable<Objeto extends Object> {
 					
 					try {
 						
-						classe.getMethod(setters.get(field)).invoke(obj, value);
+						setters.get(field).invoke(obj, value);
 					} catch (Exception e) {
+						
+						e.printStackTrace();
 						
 						int lf = field.length();
 						int lt = tabela.length();
@@ -86,7 +88,7 @@ public class DataTable<Objeto extends Object> {
 							
 						try {
 							
-							classe.getMethod(setters.get(f)).invoke(obj, value);
+							setters.get(f).invoke(obj, value);
 						} catch (Exception ex) {
 							
 							ex.printStackTrace();
@@ -113,30 +115,57 @@ public class DataTable<Objeto extends Object> {
 		return this;
 	}
 	
-	private <Obj> void configurarDados(Class<Obj> classe) {
+	
+	private void configurarDados(Class<?> classe) {
+		
+		getGettersAndSetters(classe);
+		
+		getFieldsName(classe);
+	}
+	
+	private void getGettersAndSetters(Class<?> classe) {
 		
 		for (Method m : classe.getMethods()) {
 			
-			String name = m.getName();
-			String field = name.substring(3);
+			if (isGetter(m)) {
+				
+				String field = m.getName().substring(3);
+				
+				getters.put(field.toLowerCase(), m);
+			}
 			
-			if (name.equals("wait")) {
-
-				break;
-			}
-
-			if (name.startsWith("get")) {
-
-				getters.put(field, name);
-			}
-
-			if (name.startsWith("set")) {
-
-				setters.put(field, name);
+			if (isSetter(m)) {
+				
+				String field = m.getName().substring(3);
+				
+				setters.put(field.toLowerCase(), m);
 			}
 		}
+	}
+	
+	private boolean isGetter(Method metodo) {
 		
-		//Obtendo informações do banco
+		String nome = metodo.getName();
+		
+		if (!nome.startsWith("get")) return false;
+		if (metodo.getParameterTypes().length != 0) return false;
+		if (void.class.equals(metodo.getReturnType())) return false;
+		
+		return true;
+	}
+	
+	private boolean isSetter(Method metodo) {
+		
+		String nome = metodo.getName();
+		
+		if (!nome.startsWith("set")) return false;
+		if (metodo.getParameterTypes().length == 0) return false;
+		
+		return true;
+	}
+
+	private void getFieldsName(Class<?> classe) {
+		
 		String sql = "select * from " + tabela + " limit 1";
 		
 		try {
@@ -145,11 +174,11 @@ public class DataTable<Objeto extends Object> {
 			
 			ResultSetMetaData rsmd = st.executeQuery(sql).getMetaData();
 			
-			for (int i = 0; i < rsmd.getColumnCount(); i++) {
+			for (int i = 1; i <= rsmd.getColumnCount(); i++) {
 				
 				String field = rsmd.getColumnName(i);
 				
-				fields.add(field);
+				fields.add(field.toLowerCase());
 			}
 			
 		} catch (SQLException e) {
