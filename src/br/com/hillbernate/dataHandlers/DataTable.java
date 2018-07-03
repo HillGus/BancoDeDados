@@ -1,6 +1,5 @@
 package br.com.hillbernate.dataHandlers;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -22,7 +21,7 @@ public class DataTable<Objeto extends Object> {
 	private String tabela;
 
 	private Class<Objeto> classe;
-	
+
 	
  	public DataTable(String tabela, Objeto obj) {
 
@@ -107,6 +106,13 @@ public class DataTable<Objeto extends Object> {
 	}
 	
 	
+	public DataTable<Objeto> setConnection(Connection conexao) {
+		
+		this.conexao = conexao;
+		
+		return this;
+	}
+	
 	private <Obj> void configurarDados(Class<Obj> classe) {
 		
 		for (Method m : classe.getMethods()) {
@@ -134,7 +140,7 @@ public class DataTable<Objeto extends Object> {
 		String sql = "select * from " + tabela + " limit 1";
 		
 		try {
-			
+		
 			Statement st = conexao.createStatement();
 			
 			ResultSetMetaData rsmd = st.executeQuery(sql).getMetaData();

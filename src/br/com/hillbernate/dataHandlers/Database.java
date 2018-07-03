@@ -16,6 +16,9 @@ public class Database {
 	
 	public <T extends Object> DataTable<T> getTable(String tabela, T obj) {
 		
-		return new DataTable<T>(tabela, obj);
+		DataTable<T> dt = new DataTable<T>(tabela, obj);
+		dt.setConnection(conexao);
+	
+		return dt;
 	}
 }
